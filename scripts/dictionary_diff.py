@@ -8,7 +8,6 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -24,28 +23,28 @@ class DictionaryDiff:
         old_count: Total word count in old dictionary
         new_count: Total word count in new dictionary
     """
-    
+
     added_words: set[str]
     removed_words: set[str]
     unchanged_words: set[str]
     old_count: int
     new_count: int
-    
+
     @property
     def added_count(self) -> int:
         """Number of added words."""
         return len(self.added_words)
-    
+
     @property
     def removed_count(self) -> int:
         """Number of removed (ghost) words."""
         return len(self.removed_words)
-    
+
     @property
     def unchanged_count(self) -> int:
         """Number of unchanged words."""
         return len(self.unchanged_words)
-    
+
     @property
     def has_changes(self) -> bool:
         """Whether there are any changes between dictionaries."""
@@ -67,13 +66,13 @@ def compare_dictionaries(
     """
     old_set = set(old_words)
     new_set = set(new_words)
-    
+
     added = new_set - old_set
     removed = old_set - new_set
     unchanged = old_set & new_set
-    
+
     logger.info(f"Diff analysis: +{len(added)} -{len(removed)} ={len(unchanged)}")
-    
+
     return DictionaryDiff(
         added_words=added,
         removed_words=removed,
@@ -98,25 +97,25 @@ def generate_audit_report(
         new_file_name: Description of new dictionary
     """
     logger.info(f"Generating audit report: {output_path}")
-    
+
     # Ensure output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Convert sets to sorted lists for display
     added_sorted = sorted(diff.added_words)
     removed_sorted = sorted(diff.removed_words)
-    
+
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
+
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("# ORST Dictionary Synchronization Audit Report\n\n")
         f.write(f"**Generated:** {timestamp}\n\n")
         f.write("---\n\n")
-        
+
         # Summary Section
         f.write("## Summary\n\n")
-        f.write(f"| Metric | Count |\n")
-        f.write(f"|--------|-------|\n")
+        f.write("| Metric | Count |\n")
+        f.write("|--------|-------|\n")
         f.write(f"| **Old Dictionary** | {diff.old_count:,} words |\n")
         f.write(f"| **New Dictionary** | {diff.new_count:,} words |\n")
         f.write(f"| **Added Words** | {diff.added_count:,} |\n")
@@ -124,14 +123,14 @@ def generate_audit_report(
         f.write(f"| **Unchanged Words** | {diff.unchanged_count:,} |\n")
         f.write(f"| **Net Change** | {diff.new_count - diff.old_count:+,} |\n")
         f.write("\n")
-        
+
         # Change percentage
         if diff.old_count > 0:
             pct_change = ((diff.new_count - diff.old_count) / diff.old_count) * 100
             f.write(f"**Change Rate:** {pct_change:+.1f}%\n\n")
-        
+
         f.write("---\n\n")
-        
+
         # Added Words Section
         f.write("## Added Words\n\n")
         if diff.added_count > 0:
@@ -139,7 +138,7 @@ def generate_audit_report(
                 f"The following **{diff.added_count:,} words** are present in the "
                 f"new ORST dictionary but were not in the old {old_file_name}.\n\n"
             )
-            
+
             # Show first 50, then truncate
             display_limit = 50
             if diff.added_count <= display_limit:
@@ -155,9 +154,9 @@ def generate_audit_report(
                 f.write("\n</details>\n")
         else:
             f.write("*No words were added.*\n")
-        
+
         f.write("\n---\n\n")
-        
+
         # Ghost Words Section (Removed)
         f.write("## Ghost Words (Removed)\n\n")
         if diff.removed_count > 0:
@@ -167,12 +166,12 @@ def generate_audit_report(
                 f"{old_file_name} but are NOT in the official ORST dictionary.\n"
                 f"> These are flagged as \"ghost words\" and require manual review.\n\n"
             )
-            
+
             f.write("**Action Required:** Review these words and decide whether to:\n")
             f.write("- Remove them (if they were incorrectly added)\n")
             f.write("- Preserve them in a separate supplementary dictionary\n")
             f.write("- Report to ORST if they should be in the official dictionary\n\n")
-            
+
             # Show all ghost words (usually small number)
             display_limit = 100
             if diff.removed_count <= display_limit:
@@ -187,9 +186,9 @@ def generate_audit_report(
                 f.write("\n</details>\n")
         else:
             f.write("*No ghost words found. All old words are in the new ORST dictionary.*\n")
-        
+
         f.write("\n---\n\n")
-        
+
         # Validation Section
         f.write("## Validation Checks\n\n")
         f.write("### ✅ Automated Checks Passed\n\n")
@@ -199,7 +198,7 @@ def generate_audit_report(
         f.write("- [x] Words sorted in Royal Institute order\n")
         f.write("- [x] No duplicate entries\n")
         f.write("\n")
-        
+
         f.write("### 📋 Manual Review Checklist\n\n")
         f.write("- [ ] Review sample of added words for correctness\n")
         f.write("- [ ] Review all ghost words and decide on preservation\n")
@@ -207,12 +206,12 @@ def generate_audit_report(
         f.write("- [ ] Test dictionary with Hunspell (if available)\n")
         f.write("- [ ] Spot-check Thai alphabet ordering\n")
         f.write("\n")
-        
+
         # Footer
         f.write("---\n\n")
         f.write("*This report was automatically generated by the ORST Dictionary Scraper.*\n")
         f.write("*For questions, contact: inquiry@syafiqhadzir.dev*\n")
-    
+
     logger.info(f"Audit report saved to {output_path}")
 
 
@@ -231,13 +230,13 @@ def save_word_list(
     if not words:
         logger.warning(f"No words to save for {description}")
         return
-    
+
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     sorted_words = sorted(words)
-    
+
     with open(output_path, 'w', encoding='utf-8') as f:
         for word in sorted_words:
             f.write(f"{word}\n")
-    
+
     logger.info(f"Saved {len(words)} {description} to {output_path}")

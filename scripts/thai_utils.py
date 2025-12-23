@@ -9,14 +9,14 @@ This module provides utilities for:
 
 import locale
 import unicodedata
-from typing import Iterable, Callable
+from collections.abc import Callable, Iterable
 
 from scripts.config import (
     THAI_ALPHABET,
     THAI_CONSONANTS_RANGE,
-    THAI_VOWELS_RANGE,
-    THAI_TONE_MARKS_RANGE,
     THAI_SPECIAL_CHARS_RANGE,
+    THAI_TONE_MARKS_RANGE,
+    THAI_VOWELS_RANGE,
 )
 
 
@@ -31,9 +31,9 @@ def is_thai_character(char: str) -> bool:
     """
     if len(char) != 1:
         return False
-    
+
     code_point = ord(char)
-    
+
     return any([
         THAI_CONSONANTS_RANGE[0] <= code_point <= THAI_CONSONANTS_RANGE[1],
         THAI_VOWELS_RANGE[0] <= code_point <= THAI_VOWELS_RANGE[1],
@@ -54,14 +54,14 @@ def is_valid_thai_word(word: str, allow_spaces: bool = True) -> bool:
     """
     if not word:
         return False
-    
+
     for char in word:
         if char.isspace():
             if not allow_spaces:
                 return False
         elif not is_thai_character(char):
             return False
-    
+
     return True
 
 
@@ -105,7 +105,7 @@ def create_thai_sort_key() -> Callable:
     """
     # Create a mapping of Thai characters to their sort order
     thai_order = {char: idx for idx, char in enumerate(THAI_ALPHABET)}
-    
+
     def sort_key(word: str) -> tuple:
         """Generate sort key for a Thai word.
         
@@ -127,7 +127,7 @@ def create_thai_sort_key() -> Callable:
                 # Non-Thai characters (spaces, hyphens) sort last
                 result.append((2000, ord(char)))
         return tuple(result)
-    
+
     return sort_key
 
 
@@ -151,14 +151,14 @@ def setup_thai_locale() -> bool:
         True if locale was successfully set, False otherwise
     """
     thai_locales = ['th_TH.UTF-8', 'th_TH', 'Thai_Thailand.874']
-    
+
     for loc in thai_locales:
         try:
             locale.setlocale(locale.LC_COLLATE, loc)
             return True
         except locale.Error:
             continue
-    
+
     return False
 
 
@@ -178,22 +178,22 @@ def filter_invalid_words(
         List of valid words
     """
     valid_words = []
-    
+
     for word in words:
         # Skip empty words
         if not word or not word.strip():
             continue
-        
+
         # Check for compound words
         if not allow_compounds and is_compound_word(word):
             continue
-        
+
         # Validate Thai characters
         if strict_thai_only and not is_valid_thai_word(word, allow_spaces=allow_compounds):
             continue
-        
+
         valid_words.append(word)
-    
+
     return valid_words
 
 
@@ -208,10 +208,10 @@ def deduplicate_preserving_order(words: list[str]) -> list[str]:
     """
     seen = set()
     result = []
-    
+
     for word in words:
         if word not in seen:
             seen.add(word)
             result.append(word)
-    
+
     return result

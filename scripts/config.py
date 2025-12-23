@@ -63,7 +63,7 @@ class ScraperConfig:
         resume_enabled: Whether to resume from saved progress
         cache_enabled: Whether to cache API responses
     """
-    
+
     delay_ms: int = DEFAULT_DELAY_MS
     max_retries: int = MAX_RETRIES
     include_compound_words: bool = True
@@ -71,7 +71,7 @@ class ScraperConfig:
     validate_thai_only: bool = True
     resume_enabled: bool = True
     cache_enabled: bool = True
-    
+
     def __post_init__(self) -> None:
         """Validate configuration parameters."""
         if self.delay_ms < 0:
@@ -90,7 +90,7 @@ class HunspellConfig:
         one_word_per_line: Enforce one word per line (Hunspell requirement)
         affix_notation: Whether to include affix rules (future feature)
     """
-    
+
     encoding: str = "utf-8"
     use_count_header: bool = True
     one_word_per_line: bool = True

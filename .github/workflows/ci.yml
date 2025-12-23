@@ -26,8 +26,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install pytest pytest-cov mypy ruff types-requests types-tqdm
+        if [ -f requirements.lock ]; then pip install -r requirements.lock; fi
+        pip install pip-audit types-requests types-tqdm
+
+    - name: Security audit
+      run: |
+        pip-audit
         
     - name: Lint with Ruff
       run: |
