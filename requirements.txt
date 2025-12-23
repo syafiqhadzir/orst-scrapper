@@ -1,0 +1,11 @@
+# Core dependencies for ORST Dictionary Scraper
+requests>=2.31.0
+tqdm>=4.66.0
+unicodedata2>=15.1.0
+
+# Development dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+mypy>=1.7.0
+black>=23.11.0
+ruff>=0.1.6
