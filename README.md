@@ -2,7 +2,10 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
+[![CI](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/codeql.yml/badge.svg)](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/codeql.yml)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+[![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 
 > Production-grade Python tool to synchronize `th_TH-royin.dic` with the official [Thai Royal Institute Dictionary (ORST)](https://dictionary.orst.go.th/).
 

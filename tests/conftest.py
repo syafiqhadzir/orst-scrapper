@@ -1,6 +1,9 @@
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, Mock
+
 from scripts.config import ScraperConfig
+
 
 @pytest.fixture
 def mock_config():
@@ -11,16 +14,18 @@ def mock_config():
         cache_enabled=False,
         resume_enabled=False,
         normalize_unicode=True,
-        validate_thai_only=True
+        validate_thai_only=True,
     )
+
 
 @pytest.fixture
 def mock_response_data():
     """Sample API response data."""
     return [
         10,  # Total count
-        ["word1", "word2", "word3"]  # Words
+        ["word1", "word2", "word3"],  # Words
     ]
+
 
 @pytest.fixture
 def mock_session():

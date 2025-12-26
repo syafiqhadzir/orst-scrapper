@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class HunspellDictionaryWriter:
     """Writer for Hunspell .dic dictionary files.
-    
+
     Hunspell dictionary format:
     - Line 1: Word count (e.g., "45000" or "# 45000")
     - Lines 2+: One word per line
@@ -24,20 +24,17 @@ class HunspellDictionaryWriter:
 
     def __init__(self, config: HunspellConfig = DEFAULT_HUNSPELL_CONFIG):
         """Initialize the dictionary writer.
-        
+
         Args:
             config: Hunspell configuration
         """
         self.config = config
 
     def write(
-        self,
-        words: list[str],
-        output_path: Path,
-        header_comment: str | None = None
+        self, words: list[str], output_path: Path, header_comment: str | None = None
     ) -> None:
         """Write words to a Hunspell dictionary file.
-        
+
         Args:
             words: Sorted list of dictionary words
             output_path: Path to output .dic file
@@ -49,10 +46,8 @@ class HunspellDictionaryWriter:
         # Validate one word per line
         if self.config.one_word_per_line:
             for i, word in enumerate(words):
-                if '\n' in word or '\r' in word:
-                    raise ValueError(
-                        f"Word at index {i} contains newline: {repr(word)}"
-                    )
+                if "\n" in word or "\r" in word:
+                    raise ValueError(f"Word at index {i} contains newline: {word!r}")
 
         logger.info(f"Writing {len(words)} words to {output_path}")
 
@@ -60,14 +55,16 @@ class HunspellDictionaryWriter:
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            with open(output_path, 'w', encoding=self.config.encoding, newline='\n') as f:
+            with output_path.open(
+                "w", encoding=self.config.encoding, newline="\n"
+            ) as f:
                 # Write word count header
                 if self.config.use_count_header:
                     f.write(f"# {len(words)}\n")
 
                     # Optional header comment
                     if header_comment:
-                        for line in header_comment.split('\n'):
+                        for line in header_comment.split("\n"):
                             if line.strip():
                                 f.write(f"# {line.strip()}\n")
 
@@ -87,10 +84,10 @@ class HunspellDictionaryWriter:
 
     def read(self, input_path: Path) -> list[str]:
         """Read words from a Hunspell dictionary file.
-        
+
         Args:
             input_path: Path to existing .dic file
-            
+
         Returns:
             List of words (excluding count header)
         """
@@ -102,7 +99,7 @@ class HunspellDictionaryWriter:
         words = []
 
         try:
-            with open(input_path, encoding=self.config.encoding) as f:
+            with input_path.open(encoding=self.config.encoding) as f:
                 for line_num, line in enumerate(f, 1):
                     line = line.strip()
 
@@ -111,17 +108,17 @@ class HunspellDictionaryWriter:
                         continue
 
                     # Skip count header (line 1)
-                    if line_num == 1 and (line.startswith('#') or line.isdigit()):
+                    if line_num == 1 and (line.startswith("#") or line.isdigit()):
                         logger.debug(f"Skipping count header: {line}")
                         continue
 
                     # Skip comment lines
-                    if line.startswith('#'):
+                    if line.startswith("#"):
                         continue
 
                     # Extract word (before any affix flags)
                     # Affix flags are separated by / (e.g., "word/ABC")
-                    word = line.split('/')[0].strip()
+                    word = line.split("/")[0].strip()
 
                     if word:
                         words.append(word)
@@ -136,10 +133,10 @@ class HunspellDictionaryWriter:
     @staticmethod
     def validate_format(file_path: Path) -> tuple[bool, list[str]]:
         """Validate that a file follows Hunspell dictionary format.
-        
+
         Args:
             file_path: Path to dictionary file to validate
-            
+
         Returns:
             Tuple of (is_valid, list of error messages)
         """
@@ -149,7 +146,7 @@ class HunspellDictionaryWriter:
             return False, [f"File does not exist: {file_path}"]
 
         try:
-            with open(file_path, encoding='utf-8') as f:
+            with file_path.open(encoding="utf-8") as f:
                 lines = f.readlines()
 
             if not lines:
@@ -158,18 +155,19 @@ class HunspellDictionaryWriter:
 
             # Check first line is count header
             first_line = lines[0].strip()
-            if not (first_line.startswith('#') or first_line.isdigit()):
+            if not (first_line.startswith("#") or first_line.isdigit()):
                 errors.append(
                     f"First line should be word count, got: {first_line[:50]}"
                 )
             else:
                 # Extract count and verify
-                count_str = first_line.lstrip('#').strip()
+                count_str = first_line.lstrip("#").strip()
                 try:
                     declared_count = int(count_str)
                     actual_count = sum(
-                        1 for line in lines[1:]
-                        if line.strip() and not line.strip().startswith('#')
+                        1
+                        for line in lines[1:]
+                        if line.strip() and not line.strip().startswith("#")
                     )
                     if declared_count != actual_count:
                         errors.append(
@@ -182,7 +180,7 @@ class HunspellDictionaryWriter:
             # Check for non-UTF-8 characters
             for i, line in enumerate(lines, 1):
                 try:
-                    line.encode('utf-8')
+                    line.encode("utf-8")
                 except UnicodeEncodeError as e:
                     errors.append(f"Line {i}: Non-UTF-8 character: {e}")
 

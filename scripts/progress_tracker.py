@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ProgressState:
     """State information for resumable scraping.
-    
+
     Attributes:
         current_char_index: Index in THAI_ALPHABET of current character
         completed_chars: Set of completed Thai characters
@@ -38,7 +38,7 @@ class ProgressState:
 
     def mark_completed(self, char: str, words: list[str]) -> None:
         """Mark a character as completed and store its words.
-        
+
         Args:
             char: Thai character that was completed
             words: List of words extracted for this character
@@ -48,14 +48,15 @@ class ProgressState:
         self.total_words_scraped += len(words)
 
         from datetime import datetime
+
         self.last_update_time = datetime.now().isoformat()
 
     def is_completed(self, char: str) -> bool:
         """Check if a character has already been completed.
-        
+
         Args:
             char: Thai character to check
-            
+
         Returns:
             True if this character was already scraped
         """
@@ -63,7 +64,7 @@ class ProgressState:
 
     def get_all_words(self) -> list[str]:
         """Get all words from partial results.
-        
+
         Returns:
             Flat list of all scraped words
         """
@@ -78,7 +79,7 @@ class ProgressTracker:
 
     def __init__(self, progress_file: Path = PROGRESS_FILE):
         """Initialize the progress tracker.
-        
+
         Args:
             progress_file: Path to progress state file
         """
@@ -87,7 +88,7 @@ class ProgressTracker:
 
     def load(self) -> bool:
         """Load progress state from file.
-        
+
         Returns:
             True if state was loaded successfully, False otherwise
         """
@@ -96,15 +97,15 @@ class ProgressTracker:
             return False
 
         try:
-            with open(self.progress_file, encoding='utf-8') as f:
+            with self.progress_file.open(encoding="utf-8") as f:
                 data = json.load(f)
 
             self.state = ProgressState(
-                current_char_index=data.get('current_char_index', 0),
-                completed_chars=set(data.get('completed_chars', [])),
-                total_words_scraped=data.get('total_words_scraped', 0),
-                last_update_time=data.get('last_update_time', ''),
-                partial_results=data.get('partial_results', {})
+                current_char_index=data.get("current_char_index", 0),
+                completed_chars=set(data.get("completed_chars", [])),
+                total_words_scraped=data.get("total_words_scraped", 0),
+                last_update_time=data.get("last_update_time", ""),
+                partial_results=data.get("partial_results", {}),
             )
 
             logger.info(
@@ -123,14 +124,19 @@ class ProgressTracker:
         self.progress_file.parent.mkdir(parents=True, exist_ok=True)
 
         try:
-            with open(self.progress_file, 'w', encoding='utf-8') as f:
-                json.dump({
-                    'current_char_index': self.state.current_char_index,
-                    'completed_chars': list(self.state.completed_chars),
-                    'total_words_scraped': self.state.total_words_scraped,
-                    'last_update_time': self.state.last_update_time,
-                    'partial_results': self.state.partial_results,
-                }, f, ensure_ascii=False, indent=2)
+            with self.progress_file.open("w", encoding="utf-8") as f:
+                json.dump(
+                    {
+                        "current_char_index": self.state.current_char_index,
+                        "completed_chars": list(self.state.completed_chars),
+                        "total_words_scraped": self.state.total_words_scraped,
+                        "last_update_time": self.state.last_update_time,
+                        "partial_results": self.state.partial_results,
+                    },
+                    f,
+                    ensure_ascii=False,
+                    indent=2,
+                )
 
             logger.debug(f"Progress saved to {self.progress_file}")
 
@@ -150,7 +156,7 @@ class ProgressTracker:
 
     def update_char_index(self, index: int) -> None:
         """Update current character index and save.
-        
+
         Args:
             index: New character index
         """
@@ -159,7 +165,7 @@ class ProgressTracker:
 
     def mark_char_completed(self, char: str, words: list[str]) -> None:
         """Mark a character as completed and save progress.
-        
+
         Args:
             char: Thai character
             words: Scraped words for this character

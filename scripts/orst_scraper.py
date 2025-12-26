@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 class ORSTScraper:
     """Main scraper orchestrator for ORST Dictionary.
-    
+
     This class manages the complete scraping workflow:
     1. Iterate through Thai alphabet
     2. Fetch all words for each character
@@ -39,12 +39,10 @@ class ORSTScraper:
     """
 
     def __init__(
-        self,
-        config: ScraperConfig = DEFAULT_SCRAPER_CONFIG,
-        resume: bool = True
+        self, config: ScraperConfig = DEFAULT_SCRAPER_CONFIG, resume: bool = True
     ):
         """Initialize the scraper.
-        
+
         Args:
             config: Scraper configuration
             resume: Whether to resume from saved progress
@@ -55,8 +53,7 @@ class ORSTScraper:
         self.all_words: list[str] = []
 
         # Load progress if resuming
-        if resume and config.resume_enabled:
-            if self.progress.load():
+        if resume and config.resume_enabled and self.progress.load():
                 self.all_words = self.progress.state.get_all_words()
                 logger.info(
                     f"Resuming from character index "
@@ -65,10 +62,10 @@ class ORSTScraper:
 
     def scrape_character(self, char: str) -> list[str]:
         """Scrape all words for a single Thai character.
-        
+
         Args:
             char: Thai character to scrape
-            
+
         Returns:
             List of words for this character
         """
@@ -91,15 +88,14 @@ class ORSTScraper:
 
     def scrape_all(self) -> list[str]:
         """Scrape all characters in the Thai alphabet.
-        
+
         Returns:
             Complete list of all scraped words (unsorted, may have duplicates)
         """
         start_index = self.progress.state.current_char_index
 
         logger.info(
-            f"Starting scrape from character {start_index + 1}/"
-            f"{len(THAI_ALPHABET)}"
+            f"Starting scrape from character {start_index + 1}/{len(THAI_ALPHABET)}"
         )
 
         # Create progress bar
@@ -107,9 +103,8 @@ class ORSTScraper:
             total=len(THAI_ALPHABET),
             initial=start_index,
             desc="Scraping ORST",
-            unit="char"
+            unit="char",
         ) as pbar:
-
             for index in range(start_index, len(THAI_ALPHABET)):
                 char = THAI_ALPHABET[index]
 
@@ -121,11 +116,13 @@ class ORSTScraper:
                     # Update progress
                     self.progress.update_char_index(index + 1)
                     pbar.update(1)
-                    pbar.set_postfix({
-                        'char': char,
-                        'words': len(words),
-                        'total': len(self.all_words)
-                    })
+                    pbar.set_postfix(
+                        {
+                            "char": char,
+                            "words": len(words),
+                            "total": len(self.all_words),
+                        }
+                    )
 
                 except Exception as e:
                     logger.error(
@@ -139,15 +136,15 @@ class ORSTScraper:
 
     def process_words(self, words: list[str]) -> list[str]:
         """Process and clean the word list.
-        
+
         This applies:
         1. Filtering (invalid characters, compound words)
         2. Deduplication
         3. Thai Royal Institute sorting
-        
+
         Args:
             words: Raw word list
-            
+
         Returns:
             Processed, sorted, deduplicated word list
         """
@@ -157,7 +154,7 @@ class ORSTScraper:
         valid_words = filter_invalid_words(
             words,
             allow_compounds=self.config.include_compound_words,
-            strict_thai_only=self.config.validate_thai_only
+            strict_thai_only=self.config.validate_thai_only,
         )
         logger.info(f"After filtering: {len(valid_words)} valid words")
 
@@ -177,7 +174,7 @@ class ORSTScraper:
 
     def run(self) -> list[str]:
         """Run the complete scraping and processing pipeline.
-        
+
         Returns:
             Final processed word list
         """
@@ -215,14 +212,16 @@ class ORSTScraper:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type: type | None, exc_val: Exception | None, exc_tb: object | None) -> None:
+    def __exit__(
+        self, exc_type: type | None, exc_val: Exception | None, exc_tb: object | None
+    ) -> None:
         """Context manager exit."""
         self.client.close()
 
 
 def setup_logging(verbose: bool = False) -> None:
     """Configure logging for the scraper.
-    
+
     Args:
         verbose: If True, set to DEBUG level, otherwise INFO
     """
@@ -230,55 +229,51 @@ def setup_logging(verbose: bool = False) -> None:
 
     logging.basicConfig(
         level=level,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(sys.stdout),
-            logging.FileHandler('data/scraper.log', encoding='utf-8')
-        ]
+            logging.FileHandler("data/scraper.log", encoding="utf-8"),
+        ],
     )
 
 
 def main() -> int:
     """Main entry point for the scraper CLI.
-    
+
     Returns:
         Exit code (0 for success, 1 for error)
     """
     import argparse
 
     parser = argparse.ArgumentParser(
-        description='Scrape the Thai Royal Institute Dictionary (ORST)'
+        description="Scrape the Thai Royal Institute Dictionary (ORST)"
     )
     parser.add_argument(
-        '--no-resume',
-        action='store_true',
-        help='Start fresh instead of resuming from saved progress'
+        "--no-resume",
+        action="store_true",
+        help="Start fresh instead of resuming from saved progress",
     )
     parser.add_argument(
-        '--no-cache',
-        action='store_true',
-        help='Disable API response caching'
+        "--no-cache", action="store_true", help="Disable API response caching"
     )
     parser.add_argument(
-        '--no-compounds',
-        action='store_true',
-        help='Exclude compound words (entries with spaces)'
+        "--no-compounds",
+        action="store_true",
+        help="Exclude compound words (entries with spaces)",
     )
     parser.add_argument(
-        '--delay',
+        "--delay",
         type=int,
         default=200,
-        help='Delay in milliseconds between requests (default: 200)'
+        help="Delay in milliseconds between requests (default: 200)",
     )
     parser.add_argument(
-        '--output',
+        "--output",
         type=Path,
-        help='Output file path (if not specified, returns word list only)'
+        help="Output file path (if not specified, returns word list only)",
     )
     parser.add_argument(
-        '--verbose',
-        action='store_true',
-        help='Enable verbose debug logging'
+        "--verbose", action="store_true", help="Enable verbose debug logging"
     )
 
     args = parser.parse_args()
@@ -302,7 +297,7 @@ def main() -> int:
         # Output results
         if args.output:
             args.output.parent.mkdir(parents=True, exist_ok=True)
-            with open(args.output, 'w', encoding='utf-8') as f:
+            with args.output.open("w", encoding="utf-8") as f:
                 for word in words:
                     f.write(f"{word}\n")
             logger.info(f"Words saved to {args.output}")
@@ -320,5 +315,5 @@ def main() -> int:
         return 1
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

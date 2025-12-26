@@ -2,9 +2,12 @@ name: CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -12,35 +15,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.lock ]; then pip install -r requirements.lock; fi
-        pip install pip-audit types-requests types-tqdm
+      - uses: actions/checkout@v4
 
-    - name: Security audit
-      run: |
-        pip-audit
-        
-    - name: Lint with Ruff
-      run: |
-        ruff check .
-        
-    - name: Type check with mypy
-      run: |
-        mypy scripts/
-        
-    - name: Run tests with pytest
-      run: |
-        python -m pytest tests/ --cov=scripts --cov-report=xml
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.lock ]; then pip install -r requirements.lock; fi
+          pip install pip-audit types-requests types-tqdm
+
+      - name: Security audit
+        run: |
+          pip-audit
+
+      - name: Lint with Ruff
+        run: |
+          ruff check .
+
+      - name: Format check with Ruff
+        run: |
+          ruff format --check .
+
+      - name: Type check with mypy
+        run: |
+          mypy scripts/
+
+      - name: Run tests with pytest
+        run: |
+          python -m pytest tests/ -v --cov=scripts --cov-report=xml --cov-report=term-missing --cov-fail-under=80
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: matrix.python-version == '3.12'
+        with:
+          name: coverage-report
+          path: coverage.xml
+          retention-days: 30

@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class APIResponse:
     """Structured response from ORST API.
-    
+
     Attributes:
         total_count: Total number of words for this Thai character
         words: List of headwords for the current page
@@ -65,7 +65,7 @@ class APIResponse:
 
 class ORSTAPIClient:
     """HTTP client for ORST Dictionary API.
-    
+
     This client implements:
     - Polite crawling with configurable delays
     - Automatic retries with exponential backoff
@@ -75,7 +75,7 @@ class ORSTAPIClient:
 
     def __init__(self, config: ScraperConfig):
         """Initialize the API client.
-        
+
         Args:
             config: Scraper configuration
         """
@@ -89,7 +89,7 @@ class ORSTAPIClient:
 
     def _create_session(self) -> requests.Session:
         """Create a requests session with retry configuration.
-        
+
         Returns:
             Configured requests.Session
         """
@@ -108,12 +108,14 @@ class ORSTAPIClient:
         session.mount("https://", adapter)
 
         # Set default headers
-        session.headers.update({
-            'User-Agent': USER_AGENT,
-            'Referer': API_BASE_URL,
-            'Accept': 'application/json, text/javascript, */*; q=0.01',
-            'Accept-Language': 'th-TH,th;q=0.9,en;q=0.8',
-        })
+        session.headers.update(
+            {
+                "User-Agent": USER_AGENT,
+                "Referer": API_BASE_URL,
+                "Accept": "application/json, text/javascript, */*; q=0.01",
+                "Accept-Language": "th-TH,th;q=0.9,en;q=0.8",
+            }
+        )
 
         return session
 
@@ -130,11 +132,11 @@ class ORSTAPIClient:
 
     def _get_cache_path(self, domain: str, page: int) -> Path:
         """Get cache file path for a specific request.
-        
+
         Args:
             domain: Thai character
             page: Page number
-            
+
         Returns:
             Path to cache file
         """
@@ -144,11 +146,11 @@ class ORSTAPIClient:
 
     def _load_from_cache(self, domain: str, page: int) -> APIResponse | None:
         """Try to load response from cache.
-        
+
         Args:
             domain: Thai character
             page: Page number
-            
+
         Returns:
             Cached APIResponse if available, None otherwise
         """
@@ -161,14 +163,14 @@ class ORSTAPIClient:
             return None
 
         try:
-            with open(cache_path, encoding='utf-8') as f:
+            with cache_path.open(encoding="utf-8") as f:
                 data = json.load(f)
                 logger.debug(f"Cache hit: {domain} page {page}")
                 return APIResponse(
-                    total_count=data['total_count'],
-                    words=data['words'],
-                    page=data['page'],
-                    domain=data['domain']
+                    total_count=data["total_count"],
+                    words=data["words"],
+                    page=data["page"],
+                    domain=data["domain"],
                 )
         except (OSError, json.JSONDecodeError, KeyError) as e:
             logger.warning(f"Cache read error for {domain} page {page}: {e}")
@@ -176,7 +178,7 @@ class ORSTAPIClient:
 
     def _save_to_cache(self, response: APIResponse) -> None:
         """Save response to cache.
-        
+
         Args:
             response: APIResponse to cache
         """
@@ -186,27 +188,32 @@ class ORSTAPIClient:
         cache_path = self._get_cache_path(response.domain, response.page)
 
         try:
-            with open(cache_path, 'w', encoding='utf-8') as f:
-                json.dump({
-                    'total_count': response.total_count,
-                    'words': response.words,
-                    'page': response.page,
-                    'domain': response.domain,
-                }, f, ensure_ascii=False, indent=2)
+            with cache_path.open("w", encoding="utf-8") as f:
+                json.dump(
+                    {
+                        "total_count": response.total_count,
+                        "words": response.words,
+                        "page": response.page,
+                        "domain": response.domain,
+                    },
+                    f,
+                    ensure_ascii=False,
+                    indent=2,
+                )
             logger.debug(f"Cached: {response.domain} page {response.page}")
         except OSError as e:
             logger.warning(f"Cache write error: {e}")
 
     def fetch_page(self, domain: str, page: int) -> APIResponse:
         """Fetch a single page of words for a Thai character.
-        
+
         Args:
             domain: Thai character (e.g., 'ก', 'ข')
             page: Page number (1-indexed)
-            
+
         Returns:
             APIResponse containing words and metadata
-            
+
         Raises:
             requests.RequestException: If the request fails after retries
             ValueError: If the API response is invalid
@@ -222,8 +229,8 @@ class ORSTAPIClient:
         # Build request URL
         url = urljoin(API_BASE_URL, API_ENDPOINT)
         params = {
-            'domain': domain,
-            'page': page,
+            "domain": domain,
+            "page": page,
         }
 
         logger.info(f"Fetching: {domain} page {page}")
@@ -233,7 +240,7 @@ class ORSTAPIClient:
             response = self.session.get(
                 url,
                 params=params,  # type: ignore[arg-type]
-                timeout=REQUEST_TIMEOUT
+                timeout=REQUEST_TIMEOUT,
             )
             response.raise_for_status()
 
@@ -254,10 +261,7 @@ class ORSTAPIClient:
 
             # Create structured response
             api_response = APIResponse(
-                total_count=total_count,
-                words=words,
-                page=page,
-                domain=domain
+                total_count=total_count, words=words, page=page, domain=domain
             )
 
             # Cache the response
@@ -279,13 +283,13 @@ class ORSTAPIClient:
 
     def fetch_all_pages(self, domain: str) -> list[str]:
         """Fetch all pages of words for a Thai character.
-        
+
         Args:
             domain: Thai character (e.g., 'ก', 'ข')
-            
+
         Returns:
             Complete list of all words for this character
-            
+
         Raises:
             requests.RequestException: If any request fails
         """
@@ -315,6 +319,8 @@ class ORSTAPIClient:
         """Context manager entry."""
         return self
 
-    def __exit__(self, exc_type: type | None, exc_val: Exception | None, exc_tb: object | None) -> None:
+    def __exit__(
+        self, exc_type: type | None, exc_val: Exception | None, exc_tb: object | None
+    ) -> None:
         """Context manager exit."""
         self.close()

@@ -1,3 +1,58 @@
+# Project metadata
+[project]
+name = "orst-scrapper"
+version = "1.0.0"
+description = "Production-grade tool to sync th_TH-royin.dic with the Thai Royal Institute Dictionary"
+readme = "README.md"
+license = {text = "GPL-3.0"}
+requires-python = ">=3.10"
+authors = [{name = "Syafiq Hadzir", email = "inquiry@syafiqhadzir.dev"}]
+keywords = ["thai", "dictionary", "hunspell", "scraper", "orst", "royal-institute"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+    "requests>=2.31.0",
+    "tqdm>=4.66.0",
+    "unicodedata2>=15.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "mypy>=1.7.0",
+    "ruff>=0.8.0",
+    "pre-commit>=3.5.0",
+    "types-requests",
+    "types-tqdm",
+]
+
+[project.scripts]
+orst-scraper = "scripts.orst_scraper:main"
+
+[project.urls]
+Homepage = "https://github.com/SyafiqHadzir/orst-scrapper"
+Repository = "https://github.com/SyafiqHadzir/orst-scrapper.git"
+Issues = "https://github.com/SyafiqHadzir/orst-scrapper/issues"
+
+# Build system
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scripts*"]
+
 # Test configuration for pytest
 [tool.pytest.ini_options]
 minversion = "7.0"
@@ -12,7 +67,7 @@ addopts = [
     "--showlocals",
 ]
 
-# Coverage configuration  
+# Coverage configuration
 [tool.coverage.run]
 source = ["scripts"]
 omit = [
@@ -29,6 +84,7 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "if TYPE_CHECKING:",
 ]
+fail_under = 80
 
 # MyPy configuration
 [tool.mypy]
@@ -51,17 +107,30 @@ target-version = "py310"
 
 [tool.ruff.lint]
 select = [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "C4",  # flake8-comprehensions
-    "UP",  # pyupgrade
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+    "ARG",  # flake8-unused-arguments
+    "SIM",  # flake8-simplify
+    "PTH",  # flake8-use-pathlib
+    "RUF",  # Ruff-specific rules
+    "S",    # flake8-bandit (security)
+    "N",    # pep8-naming
 ]
 ignore = [
-    "E501",  # line too long (handled by black)
+    "E501",   # line too long (handled by formatter)
+    "S101",   # assert usage (needed for tests)
+    "ARG001", # unused function argument (sometimes intentional)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+"__init__.py" = ["F401"]
+"tests/*" = ["S101", "ARG001", "ARG002"]
+
+[tool.ruff.format]
+docstring-code-format = true
+quote-style = "double"

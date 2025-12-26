@@ -27,13 +27,52 @@ USER_AGENT: Final[str] = (
 # Thai Alphabet in Royal Institute Dictionary Order
 # This is the official ordering used by the Thai Royal Institute
 THAI_ALPHABET: Final[tuple[str, ...]] = (
-    "ก", "ข", "ฃ", "ค", "ฅ", "ฆ", "ง",
-    "จ", "ฉ", "ช", "ซ", "ฌ", "ญ",
-    "ฎ", "ฏ", "ฐ", "ฑ", "ฒ", "ณ",
-    "ด", "ต", "ถ", "ท", "ธ", "น",
-    "บ", "ป", "ผ", "ฝ", "พ", "ฟ", "ภ", "ม",
-    "ย", "ร", "ฤ", "ล", "ฦ", "ว",
-    "ศ", "ษ", "ส", "ห", "ฬ", "อ", "ฮ"
+    "ก",
+    "ข",
+    "ฃ",
+    "ค",
+    "ฅ",
+    "ฆ",
+    "ง",
+    "จ",
+    "ฉ",
+    "ช",
+    "ซ",
+    "ฌ",
+    "ญ",
+    "ฎ",
+    "ฏ",
+    "ฐ",
+    "ฑ",
+    "ฒ",
+    "ณ",
+    "ด",
+    "ต",
+    "ถ",
+    "ท",
+    "ธ",
+    "น",
+    "บ",
+    "ป",
+    "ผ",
+    "ฝ",
+    "พ",
+    "ฟ",
+    "ภ",
+    "ม",
+    "ย",
+    "ร",
+    "ฤ",
+    "ล",
+    "ฦ",
+    "ว",
+    "ศ",
+    "ษ",
+    "ส",
+    "ห",
+    "ฬ",
+    "อ",
+    "ฮ",
 )
 
 # Unicode Character Ranges for Thai Script
@@ -53,7 +92,7 @@ PROGRESS_FILE: Final[Path] = DATA_DIR / "scraper_progress.json"
 @dataclass(frozen=True)
 class ScraperConfig:
     """Configuration for the ORST dictionary scraper.
-    
+
     Attributes:
         delay_ms: Delay in milliseconds between API requests
         max_retries: Maximum number of retry attempts for failed requests
@@ -83,7 +122,7 @@ class ScraperConfig:
 @dataclass(frozen=True)
 class HunspellConfig:
     """Configuration for Hunspell dictionary format.
-    
+
     Attributes:
         encoding: Character encoding for the dictionary file
         use_count_header: Whether to include word count on first line
