@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Multi-stage build for smaller image size
-FROM python:3.10-slim AS builder
+FROM python:3.14-slim AS builder
 
 # OCI Labels
 LABEL org.opencontainers.image.source="https://github.com/SyafiqHadzir/orst-scrapper"
@@ -22,7 +22,7 @@ COPY requirements.lock .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.lock
 
 # Final stage
-FROM python:3.10-slim
+FROM python:3.14-slim
 
 # OCI Labels (repeated for final image)
 LABEL org.opencontainers.image.source="https://github.com/SyafiqHadzir/orst-scrapper"
