@@ -5,21 +5,62 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests before release
+        run: python -m pytest tests/ -v
+
+      - name: Generate checksums
+        run: |
+          mkdir -p release-assets
+          if [ -f th_TH-royin.dic ]; then
+            cp th_TH-royin.dic release-assets/
+            sha256sum release-assets/th_TH-royin.dic > release-assets/checksums.sha256
+          fi
+          if [ -f reports/audit_report.md ]; then
+            cp reports/audit_report.md release-assets/
+          fi
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: |
-            th_TH-royin.dic
-            th_TH-royin.new.dic
-            reports/audit_report.md
+            release-assets/*
+          body: |
+            ## Thai Royal Institute Dictionary Update
+
+            This release contains the synchronized Thai dictionary from ORST.
+
+            ### Quick Install
+            ```bash
+            pip install orst-scrapper
+            ```
+
+            ### Manual Download
+            Download `th_TH-royin.dic` and place it in your Hunspell dictionaries folder.
+
+            ### Verification
+            Verify file integrity using the provided checksums:
+            ```bash
+            sha256sum -c checksums.sha256
+            ```

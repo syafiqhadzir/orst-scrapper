@@ -54,11 +54,11 @@ class ORSTScraper:
 
         # Load progress if resuming
         if resume and config.resume_enabled and self.progress.load():
-                self.all_words = self.progress.state.get_all_words()
-                logger.info(
-                    f"Resuming from character index "
-                    f"{self.progress.state.current_char_index}"
-                )
+            self.all_words = self.progress.state.get_all_words()
+            logger.info(
+                f"Resuming from character index "
+                f"{self.progress.state.current_char_index}"
+            )
 
     def scrape_character(self, char: str) -> list[str]:
         """Scrape all words for a single Thai character.

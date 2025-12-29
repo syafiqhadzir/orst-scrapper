@@ -96,7 +96,7 @@ def is_compound_word(word: str) -> bool:
     return " " in word or "-" in word or "–" in word  # noqa: RUF001
 
 
-def create_thai_sort_key() -> Callable:
+def create_thai_sort_key() -> Callable[[str], tuple[tuple[int, int], ...]]:
     """Create a sort key function for Royal Institute Thai dictionary order.
 
     This creates a collation key based on the official Thai alphabet order
@@ -108,7 +108,7 @@ def create_thai_sort_key() -> Callable:
     # Create a mapping of Thai characters to their sort order
     thai_order = {char: idx for idx, char in enumerate(THAI_ALPHABET)}
 
-    def sort_key(word: str) -> tuple:
+    def sort_key(word: str) -> tuple[tuple[int, int], ...]:
         """Generate sort key for a Thai word.
 
         Args:

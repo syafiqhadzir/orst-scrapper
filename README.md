@@ -2,8 +2,10 @@
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)
+[![PyPI version](https://badge.fury.io/py/orst-scrapper.svg)](https://pypi.org/project/orst-scrapper/)
 [![CI](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/codeql.yml/badge.svg)](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/codeql.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SyafiqHadzir_orst-scrapper&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=SyafiqHadzir_orst-scrapper)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
 
@@ -18,11 +20,18 @@
 - 📊 **Audit Reports**: Comprehensive diff analysis with added/removed word tracking
 - ✅ **Royal Institute Sorting**: Proper Thai alphabetical ordering (not UTF-8 binary)
 - 🧪 **Fully Tested**: Comprehensive unit test coverage with type safety
+- 🎨 **Rich CLI**: Beautiful command-line interface with progress bars and colored output
 
 ## 🚀 Quick Start
 
 ### Installation
 
+**From PyPI** (recommended):
+```bash
+pip install orst-scrapper
+```
+
+**From source**:
 ```bash
 # Clone the repository
 git clone https://github.com/SyafiqHadzir/orst-scrapper.git

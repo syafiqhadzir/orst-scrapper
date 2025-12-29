@@ -1,7 +1,7 @@
 # Project metadata
 [project]
 name = "orst-scrapper"
-version = "1.0.0"
+version = "1.1.0"
 description = "Production-grade tool to sync th_TH-royin.dic with the Thai Royal Institute Dictionary"
 readme = "README.md"
 license = {text = "GPL-3.0"}
@@ -9,7 +9,7 @@ requires-python = ">=3.10"
 authors = [{name = "Syafiq Hadzir", email = "inquiry@syafiqhadzir.dev"}]
 keywords = ["thai", "dictionary", "hunspell", "scraper", "orst", "royal-institute"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     "Operating System :: OS Independent",
@@ -17,21 +17,24 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Text Processing :: Linguistic",
 ]
 dependencies = [
-    "requests>=2.31.0",
-    "tqdm>=4.66.0",
-    "unicodedata2>=15.1.0",
+    "requests>=2.32.5",
+    "tqdm>=4.67.1",
+    "unicodedata2>=17.0.0",
+    "rich>=14.0.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4.0",
-    "pytest-cov>=4.1.0",
-    "mypy>=1.7.0",
-    "ruff>=0.8.0",
-    "pre-commit>=3.5.0",
+    "pytest>=9.0.0",
+    "pytest-cov>=6.0.0",
+    "mypy>=1.14.0",
+    "ruff>=0.14.0",
+    "pre-commit>=4.0.0",
+    "responses>=0.25.7",
     "types-requests",
     "types-tqdm",
 ]
@@ -43,10 +46,12 @@ orst-scraper = "scripts.orst_scraper:main"
 Homepage = "https://github.com/SyafiqHadzir/orst-scrapper"
 Repository = "https://github.com/SyafiqHadzir/orst-scrapper.git"
 Issues = "https://github.com/SyafiqHadzir/orst-scrapper/issues"
+Documentation = "https://github.com/SyafiqHadzir/orst-scrapper#readme"
+Changelog = "https://github.com/SyafiqHadzir/orst-scrapper/blob/main/CHANGELOG.md"
 
 # Build system
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=75.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
@@ -55,7 +60,7 @@ include = ["scripts*"]
 
 # Test configuration for pytest
 [tool.pytest.ini_options]
-minversion = "7.0"
+minversion = "9.0"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
@@ -88,7 +93,7 @@ fail_under = 80
 
 # MyPy configuration
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.13"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -99,37 +104,59 @@ warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
 strict_equality = true
+strict = true
 
 # Ruff configuration
 [tool.ruff]
 line-length = 88
-target-version = "py310"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "F",    # pyflakes
-    "I",    # isort
-    "B",    # flake8-bugbear
-    "C4",   # flake8-comprehensions
-    "UP",   # pyupgrade
-    "ARG",  # flake8-unused-arguments
-    "SIM",  # flake8-simplify
-    "PTH",  # flake8-use-pathlib
-    "RUF",  # Ruff-specific rules
-    "S",    # flake8-bandit (security)
-    "N",    # pep8-naming
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "ARG",    # flake8-unused-arguments
+    "SIM",    # flake8-simplify
+    "PTH",    # flake8-use-pathlib
+    "RUF",    # Ruff-specific rules
+    "S",      # flake8-bandit (security)
+    "N",      # pep8-naming
+    "D",      # pydocstyle
+    "PL",     # pylint
+    "PERF",   # perflint
+    "FURB",   # refurb
+    "LOG",    # flake8-logging
+    "TRY",    # tryceratops
 ]
 ignore = [
-    "E501",   # line too long (handled by formatter)
-    "S101",   # assert usage (needed for tests)
-    "ARG001", # unused function argument (sometimes intentional)
+    "E501",     # line too long (handled by formatter)
+    "S101",     # assert usage (needed for tests)
+    "ARG001",   # unused function argument (sometimes intentional)
+    "D100",     # missing docstring in public module
+    "D104",     # missing docstring in public package
+    "D107",     # missing docstring in __init__
+    "PLR0913",  # too many arguments
+    "PLR0912",  # too many branches (complex functions)
+    "PLR0915",  # too many statements (long functions acceptable in CLI)
+    "PLR2004",  # magic value comparison (acceptable in config)
+    "PLC0415",  # import outside top-level (lazy imports are intentional)
+    "TRY",      # tryceratops - overly opinionated exception handling rules
+    "DTZ005",   # datetime.now() without tz (acceptable for local timestamps)
+    "PLC1901",  # empty string comparison (sometimes clearer)
+    "PLW2901",  # for loop variable overwritten (line = line.strip() is valid)
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
-"tests/*" = ["S101", "ARG001", "ARG002"]
+"__init__.py" = ["F401", "D"]
+"tests/*" = ["S101", "ARG001", "ARG002", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
 
 [tool.ruff.format]
 docstring-code-format = true

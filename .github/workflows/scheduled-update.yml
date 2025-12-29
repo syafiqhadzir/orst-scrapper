@@ -1,0 +1,93 @@
+name: Scheduled Dictionary Update
+
+on:
+  schedule:
+    # Runs at 00:00 UTC every Sunday
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Perform a dry run (no changes saved)"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-dictionary:
+    name: Update ORST Dictionary
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run dictionary scraper
+        id: scraper
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python update_royin_dictionary.py --dry-run
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            python update_royin_dictionary.py
+            # Check if dictionary file changed
+            if git diff --quiet th_TH-royin.dic 2>/dev/null; then
+              echo "changes=false" >> $GITHUB_OUTPUT
+            else
+              echo "changes=true" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Create Pull Request
+        if: steps.scraper.outputs.changes == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: update th_TH-royin.dic from ORST"
+          title: "[Auto] Update Thai Dictionary from ORST"
+          body: |
+            ## Automated Dictionary Update
+
+            This PR was automatically created by the scheduled dictionary update workflow.
+
+            ### Changes
+            - Updated `th_TH-royin.dic` with latest words from ORST API
+            - See `reports/audit_report.md` for detailed changes
+
+            ### Review Checklist
+            - [ ] Review added/removed words in audit report
+            - [ ] Check for any anomalies or unexpected changes
+            - [ ] Verify word count is reasonable
+
+            ---
+            *This PR was automatically generated.*
+          branch: auto/dictionary-update
+          delete-branch: true
+          labels: |
+            dictionary
+            automated
+          draft: false
+
+      - name: Upload audit report
+        if: steps.scraper.outputs.changes == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: audit-report
+          path: reports/audit_report.md
+          retention-days: 30
