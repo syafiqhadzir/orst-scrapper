@@ -1,4 +1,5 @@
-"""Unit tests for Thai utilities module."""
+import locale
+from unittest.mock import patch
 
 from scripts.thai_utils import (
     create_thai_sort_key,
@@ -8,6 +9,7 @@ from scripts.thai_utils import (
     is_thai_character,
     is_valid_thai_word,
     normalize_thai_unicode,
+    setup_thai_locale,
     sort_thai_words,
 )
 
@@ -15,47 +17,52 @@ from scripts.thai_utils import (
 class TestThaiCharacterValidation:
     """Tests for Thai character validation."""
 
-    def test_is_thai_character_consonants(self):
+    def test_is_thai_character_consonants(self) -> None:
         """Test recognition of Thai consonants."""
         assert is_thai_character("ก")
         assert is_thai_character("ข")
         assert is_thai_character("ฮ")
 
-    def test_is_thai_character_vowels(self):
+    def test_is_thai_character_vowels(self) -> None:
         """Test recognition of Thai vowels."""
         assert is_thai_character("า")
         assert is_thai_character("ิ")
         assert is_thai_character("ุ")
 
-    def test_is_thai_character_tone_marks(self):
+    def test_is_thai_character_tone_marks(self) -> None:
         """Test recognition of Thai tone marks."""
         assert is_thai_character("่")
         assert is_thai_character("้")
         assert is_thai_character("๊")
 
-    def test_is_thai_character_non_thai(self):
+    def test_is_thai_character_non_thai(self) -> None:
         """Test rejection of non-Thai characters."""
         assert not is_thai_character("a")
         assert not is_thai_character("1")
         assert not is_thai_character(" ")
         assert not is_thai_character("中")
 
+    def test_is_thai_character_multi(self) -> None:
+        """Test is_thai_character with non-single chars."""
+        assert not is_thai_character("")
+        assert not is_thai_character("กา")
+
 
 class TestWordValidation:
     """Tests for word validation."""
 
-    def test_valid_thai_word(self):
+    def test_valid_thai_word(self) -> None:
         """Test validation of valid Thai words."""
         assert is_valid_thai_word("กก")
         assert is_valid_thai_word("กระดาษ")
         assert is_valid_thai_word("ก่อน")
 
-    def test_valid_thai_word_with_spaces(self):
+    def test_valid_thai_word_with_spaces(self) -> None:
         """Test validation of compound words with spaces."""
         assert is_valid_thai_word("ก ข ค", allow_spaces=True)
         assert not is_valid_thai_word("ก ข ค", allow_spaces=False)
 
-    def test_invalid_thai_word(self):
+    def test_invalid_thai_word(self) -> None:
         """Test rejection of invalid words."""
         assert not is_valid_thai_word("")
         assert not is_valid_thai_word("hello")
@@ -66,26 +73,21 @@ class TestWordValidation:
 class TestUnicodeNormalization:
     """Tests for Unicode normalization."""
 
-    def test_normalize_sara_am(self):
+    def test_normalize_sara_am(self) -> None:
         """Test normalization of Sara Am (ำ)."""
         # Sara Am can be U+0E33 (composed) or U+0E4D + U+0E32 (decomposed)
-        # The key is that normalization is consistent
         composed = "ำ"  # U+0E33
         decomposed = "\u0e4d\u0e32"  # Nikhahit + Sara Aa
 
-        # Apply NFC normalization
         result_composed = normalize_thai_unicode(composed)
         result_decomposed = normalize_thai_unicode(decomposed)
 
-        # Both should be valid Thai text after normalization
         assert is_valid_thai_word(result_composed, allow_spaces=False)
         assert is_valid_thai_word(result_decomposed, allow_spaces=False)
-
-        # Normalization should be idempotent
         assert normalize_thai_unicode(result_composed) == result_composed
         assert normalize_thai_unicode(result_decomposed) == result_decomposed
 
-    def test_normalize_preserves_text(self):
+    def test_normalize_preserves_text(self) -> None:
         """Test that normalization preserves text content."""
         text = "กระดาษ"
         assert normalize_thai_unicode(text) == text
@@ -94,17 +96,17 @@ class TestUnicodeNormalization:
 class TestCompoundWords:
     """Tests for compound word detection."""
 
-    def test_is_compound_word_with_space(self):
+    def test_is_compound_word_with_space(self) -> None:
         """Test detection of compound words with spaces."""
         assert is_compound_word("ก ข")
         assert is_compound_word("ก ข ค")
 
-    def test_is_compound_word_with_hyphen(self):
+    def test_is_compound_word_with_hyphen(self) -> None:
         """Test detection of compound words with hyphens."""
         assert is_compound_word("ก-ข")
         assert is_compound_word("ก–ข")  # Em dash  # noqa: RUF001
 
-    def test_is_not_compound_word(self):
+    def test_is_not_compound_word(self) -> None:
         """Test rejection of simple words."""
         assert not is_compound_word("กก")
         assert not is_compound_word("กระดาษ")
@@ -113,39 +115,42 @@ class TestCompoundWords:
 class TestSorting:
     """Tests for Thai Royal Institute sorting."""
 
-    def test_sort_basic_order(self):
+    def test_sort_basic_order(self) -> None:
         """Test basic alphabet ordering."""
         words = ["ข", "ก", "ค"]
         expected = ["ก", "ข", "ค"]
         assert sort_thai_words(words) == expected
 
-    def test_sort_compound_words(self):
+    def test_sort_compound_words(self) -> None:
         """Test sorting with compound words."""
         words = ["กก", "ก", "กา"]
         expected = ["ก", "กก", "กา"]
         assert sort_thai_words(words) == expected
 
-    def test_sort_key_function(self):
+    def test_sort_key_function(self) -> None:
         """Test sort key function."""
         sort_key = create_thai_sort_key()
-
-        # ก should come before ข
         assert sort_key("ก") < sort_key("ข")
-
-        # ก should come before กก
         assert sort_key("ก") < sort_key("กก")
+
+    def test_sort_non_thai(self) -> None:
+        """Test sorting words with non-Thai characters (line 130)."""
+        words = ["ก-ข", "ก ข", "ก", "กข"]
+        # Space (32) < Hyphen (45)
+        sorted_words = sort_thai_words(words)
+        assert sorted_words[0] == "ก"
 
 
 class TestFiltering:
     """Tests for word filtering."""
 
-    def test_filter_invalid_words(self):
+    def test_filter_invalid_words(self) -> None:
         """Test filtering of invalid words."""
         words = ["ก", "hello", "กระดาษ", "", "ข123"]
         result = filter_invalid_words(words, strict_thai_only=True)
         assert result == ["ก", "กระดาษ"]
 
-    def test_filter_compound_words(self):
+    def test_filter_compound_words(self) -> None:
         """Test filtering of compound words."""
         words = ["ก", "ก ข", "กระดาษ"]
 
@@ -161,17 +166,32 @@ class TestFiltering:
 class TestDeduplication:
     """Tests for deduplication."""
 
-    def test_deduplicate_preserving_order(self):
+    def test_deduplicate_preserving_order(self) -> None:
         """Test that deduplication preserves first occurrence order."""
         words = ["ก", "ข", "ก", "ค", "ข"]
         expected = ["ก", "ข", "ค"]
         assert deduplicate_preserving_order(words) == expected
 
-    def test_deduplicate_empty_list(self):
+    def test_deduplicate_empty_list(self) -> None:
         """Test deduplication of empty list."""
         assert deduplicate_preserving_order([]) == []
 
-    def test_deduplicate_no_duplicates(self):
+    def test_deduplicate_no_duplicates(self) -> None:
         """Test deduplication when there are no duplicates."""
         words = ["ก", "ข", "ค"]
         assert deduplicate_preserving_order(words) == words
+
+
+class TestThaiLocale:
+    """Tests for Thai locale setup."""
+
+    def test_setup_locale(self) -> None:
+        """Test setup_thai_locale function."""
+        result = setup_thai_locale()
+        assert isinstance(result, bool)
+
+    def test_setup_locale_fail(self) -> None:
+        """Test setup_thai_locale failure path (lines 161-164)."""
+        with patch("locale.setlocale", side_effect=locale.Error("Unsupported")):
+            result = setup_thai_locale()
+            assert result is False

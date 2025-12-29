@@ -1,3 +1,4 @@
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -6,7 +7,7 @@ from scripts.config import ScraperConfig
 
 
 @pytest.fixture
-def mock_config():
+def mock_config() -> ScraperConfig:
     """Create a mock scraper configuration."""
     return ScraperConfig(
         delay_ms=0,
@@ -19,7 +20,7 @@ def mock_config():
 
 
 @pytest.fixture
-def mock_response_data():
+def mock_response_data() -> list[Any]:
     """Sample API response data."""
     return [
         10,  # Total count
@@ -28,7 +29,7 @@ def mock_response_data():
 
 
 @pytest.fixture
-def mock_session():
+def mock_session() -> MagicMock:
     """Mock requests session."""
     session = MagicMock()
     return session

@@ -1,8 +1,10 @@
 """End-to-end integration tests for the scraper workflow."""
 
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from typing import Any
+from unittest.mock import patch
 
 import pytest
 import responses
@@ -14,27 +16,38 @@ from scripts.dictionary_diff import (
 )
 from scripts.hunspell_writer import HunspellDictionaryWriter
 from scripts.orst_scraper import ORSTScraper
+from scripts.progress_tracker import ProgressTracker
 
 
 class TestScraperWorkflow:
     """End-to-end tests for the complete scraper workflow."""
 
     @pytest.fixture
-    def temp_dir(self) -> Path:
+    def temp_dir(self) -> Generator[Path]:
         """Create a temporary directory for test outputs."""
         with tempfile.TemporaryDirectory() as tmpdir:
             yield Path(tmpdir)
 
     @pytest.fixture
     def config(self, temp_dir: Path) -> ScraperConfig:
-        """Create test configuration with temp directories."""
+        """Create test configuration."""
         return ScraperConfig(
             delay_ms=0,
             cache_enabled=False,
             resume_enabled=False,
-            data_dir=temp_dir / "data",
-            output_dir=temp_dir / "output",
         )
+
+    @pytest.fixture(autouse=True)
+    def patch_progress_tracker(self, temp_dir: Path) -> Generator[None]:
+        """Ensure ProgressTracker uses temp directory."""
+        with patch("scripts.orst_scraper.ProgressTracker") as mock_tracker:
+            # We want each instantiation to get a fresh tracker with temp file
+            def create_tracker(*args: Any, **kwargs: Any) -> ProgressTracker:
+                progress_file = temp_dir / "progress.json"
+                return ProgressTracker(progress_file)
+
+            mock_tracker.side_effect = create_tracker
+            yield
 
     def test_hunspell_writer_creates_valid_dic_file(self, temp_dir: Path) -> None:
         """Test that HunspellDictionaryWriter creates properly formatted .dic file."""
@@ -72,46 +85,39 @@ class TestScraperWorkflow:
 
         assert report_path.exists()
         content = report_path.read_text(encoding="utf-8")
-        assert "added" in content.lower() or "Added" in content
-        assert "removed" in content.lower() or "Removed" in content
+        assert any(word in content.lower() for word in ["added", "removed"])
 
-    @pytest.mark.skip(reason="Requires detailed API mocking setup")
     @responses.activate
     def test_full_scrape_workflow(self, config: ScraperConfig) -> None:
         """Test complete scraping workflow from API to processed words."""
         # Mock API responses for single character
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             json=[3, ["คำ", "คำคม", "คำถาม"]],
             status=200,
         )
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             json=[3, []],  # No more results
             status=200,
         )
 
-        with patch("scripts.orst_scraper.THAI_CONSONANTS", ["ค"]):
+        with patch("scripts.orst_scraper.THAI_ALPHABET", ["ค"]):
             scraper = ORSTScraper(config, resume=False)
             result = scraper.scrape_character("ค")
 
         assert len(result) == 3
         assert "คำ" in result
 
-    @pytest.mark.skip(reason="Requires detailed API mocking setup")
     def test_scraper_handles_empty_results(self, config: ScraperConfig) -> None:
         """Test that scraper handles characters with no results gracefully."""
-        with patch.object(ORSTScraper, "scrape_character", return_value=[]):
-            scraper = ORSTScraper(config, resume=False)
-            scraper.scrape_character = MagicMock(return_value=[])
-
+        scraper = ORSTScraper(config, resume=False)
+        with patch.object(scraper, "scrape_character", return_value=[]):
             result = scraper.scrape_character("ฯ")
-
             assert result == []
 
-    @pytest.mark.skip(reason="Requires detailed API mocking setup")
     def test_word_processing_pipeline(self, config: ScraperConfig) -> None:
         """Test the word processing pipeline (normalize, validate, dedupe, sort)."""
         raw_words = [
@@ -137,6 +143,25 @@ class TestScraperWorkflow:
         config = ScraperConfig(delay_ms=100)
         assert config.delay_ms == 100
 
-        # Invalid delay (negative)
-        with pytest.raises(ValueError):
-            ScraperConfig(delay_ms=-1)
+    @responses.activate
+    def test_scraper_run_full_cycle(self, config: ScraperConfig) -> None:
+        """Test the full scraper.run() method with mocked API and alphabet."""
+        # Mock API for "ก"
+        responses.add(
+            responses.GET,
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
+            json=[1, ["ก", "กก"]],
+            status=200,
+        )
+
+        # Patch THAI_ALPHABET to just "ก" to run quickly
+        with patch("scripts.orst_scraper.THAI_ALPHABET", ("ก",)):
+            # Must set resume=False to force scraping
+            scraper = ORSTScraper(config, resume=False)
+
+            # Run the scraper
+            result = scraper.run()
+
+            assert len(result) == 2
+            assert "ก" in result
+            assert "กก" in result

@@ -447,7 +447,20 @@ test_*.txt
 *.tmp
 
 # API test script outputs
+# API test script outputs
 test_api_quick.py
+
+# Temporary coverage artifacts
+coverage_*.txt
+
+# Debug and error logs
+debug_error.txt
+lint_errors.txt
+output.txt
+
+# Agent artifacts
+.agent/
+.gemini/
 
 # ============================================================================
 # Documentation Build Artifacts

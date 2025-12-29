@@ -1,15 +1,11 @@
-"""Integration tests for ORST API client using mocked HTTP responses."""
-
 import pytest
+import requests
 import responses
 
 from scripts.api_client import ORSTAPIClient
 from scripts.config import ScraperConfig
 
 
-@pytest.mark.skip(
-    reason="Requires exact API implementation knowledge - for manual testing"
-)
 class TestAPIClientIntegration:
     """Integration tests for API client with mocked HTTP responses."""
 
@@ -33,12 +29,13 @@ class TestAPIClientIntegration:
         # Mock the ORST API response
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             json=[10, ["คำ", "คำคม", "คำถาม"]],
             status=200,
         )
 
-        words = client.fetch_page("ค", page=0)
+        response = client.fetch_page("ค", page=1)
+        words = response.words
 
         assert len(words) == 3
         assert "คำ" in words
@@ -50,14 +47,14 @@ class TestAPIClientIntegration:
         """Test API response with no results."""
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             json=[0, []],
             status=200,
         )
 
-        words = client.fetch_page("ฯ", page=0)
+        response = client.fetch_page("ฯ", page=1)
 
-        assert words == []
+        assert response.words == []
 
     @responses.activate
     def test_fetch_page_server_error_retry(self, client: ORSTAPIClient) -> None:
@@ -65,20 +62,20 @@ class TestAPIClientIntegration:
         # First request fails, second succeeds
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             json={"error": "Internal Server Error"},
             status=500,
         )
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             json=[2, ["ก", "ข"]],
             status=200,
         )
 
-        words = client.fetch_page("ก", page=0)
+        response = client.fetch_page("ก", page=1)
 
-        assert len(words) == 2
+        assert len(response.words) == 2
         assert len(responses.calls) == 2  # Retried once
 
     @responses.activate
@@ -87,22 +84,22 @@ class TestAPIClientIntegration:
         # Page 1: 50 results (indicates more pages)
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
-            json=[100, [f"word{i}" for i in range(50)]],
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
+            json=[30, [f"word{i}" for i in range(50)]],
             status=200,
         )
         # Page 2: 50 more results
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
-            json=[100, [f"word{i}" for i in range(50, 100)]],
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
+            json=[30, [f"word{i}" for i in range(50, 100)]],
             status=200,
         )
         # Page 3: No more results
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
-            json=[100, []],
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
+            json=[30, []],
             status=200,
         )
 
@@ -116,24 +113,22 @@ class TestAPIClientIntegration:
         """Test handling of malformed API response."""
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             json={"unexpected": "format"},
             status=200,
         )
 
-        with pytest.raises((KeyError, TypeError, IndexError)):
-            client.fetch_page("ก", page=0)
+        with pytest.raises(ValueError):
+            client.fetch_page("ก", page=1)
 
     @responses.activate
     def test_fetch_page_network_timeout(self, client: ORSTAPIClient) -> None:
         """Test handling of network timeout."""
-        import requests
-
         responses.add(
             responses.GET,
-            "https://dictionary.orst.go.th/api/search",
+            "https://dictionary.orst.go.th/Lookup/lookupDomain.php",
             body=requests.exceptions.Timeout("Connection timed out"),
         )
 
         with pytest.raises(requests.exceptions.Timeout):
-            client.fetch_page("ก", page=0)
+            client.fetch_page("ก", page=1)
