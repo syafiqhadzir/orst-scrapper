@@ -105,9 +105,12 @@ def create_thai_sort_key() -> Callable[[str], tuple[tuple[int, int], ...]]:
     Returns:
         A function that can be used as key parameter in sorted()
     """
+    from functools import lru_cache
+
     # Create a mapping of Thai characters to their sort order
     thai_order = {char: idx for idx, char in enumerate(THAI_ALPHABET)}
 
+    @lru_cache(maxsize=100_000)
     def sort_key(word: str) -> tuple[tuple[int, int], ...]:
         """Generate sort key for a Thai word.
 

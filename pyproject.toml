@@ -1,7 +1,7 @@
 # Project metadata
 [project]
 name = "orst-scrapper"
-version = "1.1.0"
+version = "1.2.0"
 description = "Production-grade tool to sync th_TH-royin.dic with the Thai Royal Institute Dictionary"
 readme = "README.md"
 license = {text = "GPL-3.0"}
@@ -25,18 +25,29 @@ dependencies = [
     "tqdm>=4.67.1",
     "unicodedata2>=17.0.0",
     "rich>=14.0.0",
+    "httpx>=0.28.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=9.0.0",
     "pytest-cov>=6.0.0",
+    "pytest-asyncio>=0.24.0",
     "mypy>=1.14.0",
     "ruff>=0.14.0",
     "pre-commit>=4.0.0",
     "responses>=0.25.7",
+    "hypothesis>=6.120.0",
     "types-requests",
     "types-tqdm",
+]
+docs = [
+    "mkdocs>=1.6.0",
+    "mkdocs-material>=9.5.0",
+    "mkdocstrings[python]>=0.27.0",
+]
+all = [
+    "orst-scrapper[dev,docs]",
 ]
 
 [project.scripts]
@@ -57,6 +68,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["scripts*"]
+
+[tool.setuptools.package-data]
+scripts = ["py.typed"]
 
 # Test configuration for pytest
 [tool.pytest.ini_options]

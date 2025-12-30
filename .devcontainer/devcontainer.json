@@ -1,0 +1,56 @@
+{
+  "name": "ORST Dictionary Scraper",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers-extra/features/uv:1": {}
+  },
+  "postCreateCommand": "pip install -e .[dev] && pre-commit install",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.typeCheckingMode": "strict",
+        "python.testing.pytestEnabled": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+          }
+        }
+      },
+      "extensions": [
+        "charliermarsh.ruff",
+        "ms-python.python",
+        "ms-python.mypy-type-checker",
+        "ms-python.vscode-pylance",
+        "GitHub.copilot",
+        "GitHub.vscode-pull-request-github",
+        "eamodio.gitlens",
+        "tamasfe.even-better-toml",
+        "redhat.vscode-yaml",
+        "bierner.markdown-mermaid",
+        "yzhang.markdown-all-in-one"
+      ]
+    }
+  },
+  "containerEnv": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "PYTHONUNBUFFERED": "1"
+  },
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "MkDocs",
+      "onAutoForward": "notify"
+    }
+  },
+  "remoteUser": "vscode"
+}

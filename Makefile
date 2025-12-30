@@ -1,4 +1,4 @@
-.PHONY: help install install-dev test test-cov lint format type-check check clean run dry-run
+.PHONY: help install install-dev test test-cov lint format type-check check clean run dry-run install-uv install-dev-uv docker-build docker-run docker-run-dry docker-scan docs-serve docs-build
 
 # Default target
 help:
@@ -69,3 +69,35 @@ clean:
 	rm -rf build dist *.egg-info
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
 	find . -type f -name "*.pyc" -delete 2>/dev/null || true
+
+# Fast dependency management with uv
+install-uv:
+	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
+	uv pip install -r requirements.txt
+
+install-dev-uv:
+	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
+	uv pip install -r requirements.txt
+	uv pip install types-requests types-tqdm hypothesis
+	pre-commit install
+
+# Docker commands
+docker-build:
+	docker build -t orst-scrapper:latest .
+
+docker-run:
+	docker run --rm -v $(PWD)/data:/app/data -v $(PWD)/reports:/app/reports orst-scrapper:latest
+
+docker-run-dry:
+	docker run --rm -v $(PWD)/data:/app/data -v $(PWD)/reports:/app/reports orst-scrapper:latest --dry-run
+
+docker-scan:
+	docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image orst-scrapper:latest
+
+# Documentation
+docs-serve:
+	mkdocs serve
+
+docs-build:
+	mkdocs build
+

@@ -4,11 +4,20 @@ urllib3>=2.3.0
 tqdm>=4.67.1
 unicodedata2>=17.0.0
 rich>=14.0.0
+httpx>=0.28.0
 
 # Development dependencies
 pytest>=9.0.0
 pytest-cov>=6.0.0
+pytest-asyncio>=0.24.0
 mypy>=1.14.0
 ruff>=0.14.0
 pre-commit>=4.0.0
 responses>=0.25.7
+hypothesis>=6.120.0
+
+# Documentation
+mkdocs>=1.6.0
+mkdocs-material>=9.5.0
+mkdocstrings[python]>=0.27.0
+

@@ -1,0 +1,66 @@
+# Docker Compose for local development
+# Usage: docker compose up
+
+services:
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+    environment:
+      - DELAY_MS=${DELAY_MS:-200}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    # Override default command for development
+    command: ["--help"]
+    profiles:
+      - cli
+
+  scraper-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./reports:/app/reports
+    environment:
+      - DELAY_MS=${DELAY_MS:-200}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+    entrypoint: ["/bin/bash"]
+    stdin_open: true
+    tty: true
+    profiles:
+      - dev
+
+  # Optional Redis cache for distributed caching (future feature)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    profiles:
+      - cache
+
+  # Documentation server
+  docs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app:ro
+    working_dir: /app
+    command: ["python", "-m", "mkdocs", "serve", "--dev-addr", "0.0.0.0:8000"]
+    ports:
+      - "8000:8000"
+    profiles:
+      - docs
+
+volumes:
+  redis-data:
+
+networks:
+  default:
+    name: orst-network

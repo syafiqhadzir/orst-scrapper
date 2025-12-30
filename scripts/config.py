@@ -76,10 +76,19 @@ THAI_ALPHABET: Final[tuple[str, ...]] = (
 )
 
 # Unicode Character Ranges for Thai Script
-THAI_CONSONANTS_RANGE: Final[tuple[int, int]] = (0x0E01, 0x0E2E)
-THAI_VOWELS_RANGE: Final[tuple[int, int]] = (0x0E30, 0x0E3A)
-THAI_TONE_MARKS_RANGE: Final[tuple[int, int]] = (0x0E48, 0x0E4B)
-THAI_SPECIAL_CHARS_RANGE: Final[tuple[int, int]] = (0x0E4C, 0x0E4F)
+THAI_CONSONANTS_RANGE: Final[tuple[int, int]] = (
+    0x0E01,
+    0x0E2F,
+)  # Consonants + Paiyannoi
+THAI_VOWELS_RANGE: Final[tuple[int, int]] = (
+    0x0E30,
+    0x0E47,
+)  # Vowels + Leading Vowels + Marks
+THAI_TONE_MARKS_RANGE: Final[tuple[int, int]] = (0x0E48, 0x0E4B)  # Tone marks
+THAI_SPECIAL_CHARS_RANGE: Final[tuple[int, int]] = (
+    0x0E4C,
+    0x0E4F,
+)  # Special symbols/punctuation
 
 # File Paths
 PROJECT_ROOT: Final[Path] = Path(__file__).parent.parent

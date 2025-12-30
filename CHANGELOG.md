@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-12-30
+
+### Added
+
+- **Async API Client**: New `AsyncORSTAPIClient` using `httpx` for 5-10x faster concurrent scraping
+- **Export Module**: Support for exporting dictionary data to JSON, CSV, SQLite, and Hunspell formats
+- **Property-Based Testing**: Hypothesis integration for automatic edge case discovery
+- **Performance Benchmarks**: Dedicated performance test suite for critical operations
+- **Dev Container**: One-click reproducible development environment with VS Code
+- **Docker Compose**: Multi-profile configuration for local development, testing, and docs
+- **MkDocs Documentation**: Auto-generated API documentation with Material theme
+- **SBOM Generation**: Software Bill of Materials for supply chain security (CycloneDX)
+- **Trivy Scanning**: Container vulnerability scanning in CI/CD pipeline
+- **uv Support**: 10-100x faster dependency resolution with uv package manager
+- **LRU Caching**: Performance optimization for Thai sort key generation
+- **PEP 561**: `py.typed` marker for typed package compliance
+
+### Changed
+
+- Added `httpx>=0.28.0` as core dependency for async HTTP support
+- Added `pytest-asyncio>=0.24.0` for async test support
+- Added `hypothesis>=6.120.0` for property-based testing
+- Added `mkdocs>=1.6.0`, `mkdocs-material>=9.5.0`, `mkdocstrings[python]>=0.27.0` for documentation
+- Added Codecov integration with coverage badge in CI
+- Enhanced VS Code extensions recommendations
+- Updated Makefile with uv, Docker, and docs commands
+- Added optional dependency groups: `dev`, `docs`, `all`
+
+### Security
+
+- Added SBOM generation using Anchore SBOM Action
+- Added Docker image vulnerability scanning with Trivy
+- Added SARIF upload to GitHub Security tab
+
 ## [1.1.0] - 2024-12-29
 
 ### Added
@@ -64,5 +98,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Type hints throughout the codebase
 - Unit test coverage
 
+[1.2.0]: https://github.com/SyafiqHadzir/orst-scrapper/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/SyafiqHadzir/orst-scrapper/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/SyafiqHadzir/orst-scrapper/releases/tag/v1.0.0

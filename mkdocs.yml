@@ -1,0 +1,100 @@
+site_name: ORST Dictionary Scraper
+site_description: Production-grade Python tool to synchronize th_TH-royin.dic with the Thai Royal Institute Dictionary
+site_author: Syafiq Hadzir
+site_url: https://syafiqhadzir.github.io/orst-scrapper/
+
+repo_name: SyafiqHadzir/orst-scrapper
+repo_url: https://github.com/SyafiqHadzir/orst-scrapper
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            members_order: source
+            separate_signature: true
+            line_length: 80
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - User Guide:
+      - Getting Started: USAGE.md
+      - Architecture: ARCHITECTURE.md
+  - Developer Guide:
+      - Development: DEVELOPMENT.md
+      - Contributing: ../CONTRIBUTING.md
+  - API Reference:
+      - api/index.md
+      - Config: api/config.md
+      - API Client: api/api_client.md
+      - Thai Utilities: api/thai_utils.md
+      - Scraper: api/orst_scraper.md
+      - Hunspell Writer: api/hunspell_writer.md
+      - Dictionary Diff: api/dictionary_diff.md
+  - Changelog: ../CHANGELOG.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/SyafiqHadzir
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/syafiqhadzir_
+
+copyright: Copyright &copy; 2024-2025 Syafiq Hadzir

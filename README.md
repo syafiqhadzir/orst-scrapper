@@ -5,55 +5,65 @@
 [![PyPI version](https://badge.fury.io/py/orst-scrapper.svg)](https://pypi.org/project/orst-scrapper/)
 [![CI](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/ci.yml/badge.svg)](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/codeql.yml/badge.svg)](https://github.com/SyafiqHadzir/orst-scrapper/actions/workflows/codeql.yml)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=SyafiqHadzir_orst-scrapper&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=SyafiqHadzir_orst-scrapper)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=syafiqhadzir_orst-scrapper&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=syafiqhadzir_orst-scrapper)
 [![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://img.shields.io/badge/mypy-checked-blue.svg)](http://mypy-lang.org/)
+[![codecov](https://codecov.io/gh/SyafiqHadzir/orst-scrapper/graph/badge.svg)](https://codecov.io/gh/SyafiqHadzir/orst-scrapper)
 
 > Production-grade Python tool to synchronize `th_TH-royin.dic` with the official [Thai Royal Institute Dictionary (ORST)](https://dictionary.orst.go.th/).
 
 ## ✨ Features
 
 - 🔄 **Automated Scraping**: Extracts all headwords from ORST dictionary (ก to ฮ)
+- ⚡ **High Performance**: Async API client for concurrent scraping (5-10x faster)
 - 🛡️ **Polite Crawler**: Respects server resources with configurable rate limiting
-- 💾 **Resumable**: Automatically saves progress and resumes on interruption
+- 💾 **Multi-Format Export**: Save as JSON, CSV, SQLite, and Hunspell format
+- 🔄 **Resumable**: Automatically saves progress and resumes on interruption
 - 🔍 **Smart Validation**: Unicode normalization, Thai character validation, duplicate detection
 - 📊 **Audit Reports**: Comprehensive diff analysis with added/removed word tracking
 - ✅ **Royal Institute Sorting**: Proper Thai alphabetical ordering (not UTF-8 binary)
-- 🧪 **Fully Tested**: Comprehensive unit test coverage with type safety
+- 🧪 **Fully Tested**: Unit, performance, and property-based testing (Hypothesis)
 - 🎨 **Rich CLI**: Beautiful command-line interface with progress bars and colored output
+- 📚 **Auto-Docs**: Comprehensive API documentation powered by MkDocs
+- 🔒 **Secure**: SBOM generation and container vulnerability scanning (Trivy)
 
 ## 🚀 Quick Start
 
 ### Installation
 
 **From PyPI** (recommended):
+
 ```bash
 pip install orst-scrapper
 ```
 
 **From source**:
+
 ```bash
 # Clone the repository
 git clone https://github.com/SyafiqHadzir/orst-scrapper.git
 cd orst-scrapper
 
 # Install dependencies
-pip install -r requirements.txt
+pip install -e .[dev,all]
 ```
 
 ### Usage
 
 **Dry run** (recommended first time):
+
 ```bash
 python update_royin_dictionary.py --dry-run
 ```
 
 **Full update**:
+
 ```bash
 python update_royin_dictionary.py
 ```
 
 **Review the audit report**:
+
 ```bash
 cat reports/audit_report.md
 ```
@@ -114,12 +124,6 @@ The scraper automatically saves progress. If interrupted, simply run again:
 python update_royin_dictionary.py
 ```
 
-To start fresh:
-```bash
-rm data/scraper_progress.json
-python update_royin_dictionary.py
-```
-
 For complete usage instructions, see [Usage Guide](docs/USAGE.md).
 
 ## 🧪 Testing
@@ -138,11 +142,11 @@ mypy scripts/
 ruff check scripts/
 ```
 
-For development setup, see [Development Guide](docs/DEVELOPMENT.md).
+For development setup, see **[Development Guide](docs/DEVELOPMENT.md)**.
 
 ## 📁 Project Structure
 
-```
+```text
 orst-scrapper/
 ├── docs/                      # Documentation
 │   ├── ARCHITECTURE.md        # System design
@@ -188,10 +192,10 @@ This project is licensed under the GPL-3.0 License - see the [LICENSE](LICENSE) 
 
 ## 📧 Contact
 
-Syafiq Hadzir - [@syafiqhadzir_](https://twitter.com/syafiqhadzir_) - inquiry@syafiqhadzir.dev
+Syafiq Hadzir - [@syafiqhadzir_](https://twitter.com/syafiqhadzir_) - <inquiry@syafiqhadzir.dev>
 
 Project Link: [https://github.com/SyafiqHadzir/orst-scrapper](https://github.com/SyafiqHadzir/orst-scrapper)
 
 ---
 
-<p align="center">Made with ❤️ for the Thai language community</p>
+> Made with ❤️ for the Thai language community
